@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Typing Practice • Bombay High Court Clerk</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #e9e9e9;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            padding: 30px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 14px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1e2b4f;
+            letter-spacing: -0.3px;
+        }
+        .header .badge {
+            background: #d4af37;
+            color: #1e2b4f;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .setup-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+        .select-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .select-group label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        select {
+            padding: 12px 18px;
+            border-radius: 14px;
+            border: 1px solid #cfd9e0;
+            font-size: 1rem;
+            background: white;
+            outline: none;
+            flex: 1;
+            min-width: 200px;
+            cursor: pointer;
+        }
+        .options-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            align-items: center;
+        }
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        .checkbox-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #1f2937;
+            box-shadow: none;
+            border: 1px solid #d1d5db;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .btn-speed {
+            background: #8b5cf6;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        .btn-speed:hover {
+            background: #7c3aed;
+        }
+
+        .test-panel {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            padding: 12px 18px;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+        }
+        .timer {
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #0f172a;
+            background: white;
+            padding: 6px 18px;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .columns {
+            display: flex;
+            gap: 22px;
+            flex: 1;
+        }
+        .source-col, .typed-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .column-title {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .source-text {
+            background: #f9fafb;
+            border: 1px solid #dee2e6;
+            border-radius: 18px;
+            padding: 20px;
+            font-size: 1rem;
+            line-height: 1.7;
+            height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #1e293b;
+            transition: opacity 0.2s;
+        }
+        .source-text.hidden {
+            display: none;
+        }
+        .typed-area {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            padding: 20px;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            font-family: 'Courier New', Courier, monospace;
+            resize: none;
+            outline: none;
+            background: white;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .btn-submit {
+            align-self: center;
+            margin-top: 6px;
+            background: #16a34a;
+            box-shadow: 0 4px 12px rgba(22,163,74,0.2);
+        }
+        .btn-submit:hover {
+            background: #15803d;
+        }
+
+        .result-panel {
+            display: none;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-value {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #475569;
+            margin-top: 4px;
+        }
+        .highlight-passage {
+            background: #ffffff;
+            border: 1px solid #e9eef3;
+            border-radius: 18px;
+            padding: 20px;
+            font-size: 1.05rem;
+            line-height: 1.9;
+            word-break: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .word-correct {
+            color: #166534;
+            font-weight: 500;
+            background: #dcfce7;
+            padding: 2px 8px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .word-wrong {
+            color: #b91c1c;
+            font-weight: 600;
+            background: #fee2e2;
+            padding: 2px 8px;
+            border-radius: 8px;
+            display: inline-block;
+            text-decoration: underline wavy #b91c1c;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 750px) {
+            .columns {
+                flex-direction: column;
+            }
+            .source-text, .typed-area {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>⌨️ Typing Practice</h1>
+            <span class="badge">Bombay High Court Clerk</span>
+        </div>
+
+        <!-- Setup Panel -->
+        <div id="setupPanel" class="setup-panel">
+            <div class="select-group">
+                <label for="passageSelect">📄 Choose Passage:</label>
+                <select id="passageSelect">
+                    <option value="random">🎲 Random Passage</option>
+                    <option value="0">Passage 1</option>
+                    <option value="1">Passage 2</option>
+                    <option value="2">Passage 3</option>
+                    <option value="3">Passage 4</option>
+                    <option value="4">Passage 5</option>
+                </select>
+            </div>
+            <div class="options-row">
+                <div class="checkbox-option">
+                    <input type="checkbox" id="showSourceCheck" checked>
+                    <label for="showSourceCheck">👁 Show source passage</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="disableBackspaceCheck">
+                    <label for="disableBackspaceCheck">🚫 Disable backspace</label>
+                </div>
+                <button id="downloadPdfBtn" class="btn btn-secondary">📥 Download Passage PDF</button>
+            </div>
+
+            <button id="startBtn" class="btn">▶ Start Typing Test</button>
+            <a id="speedPracticeSetup" class="btn btn-speed" href="high court passages.pdf" target="_blank">⚡ Speed Practice</a>
+            <p style="color:#64748b; font-size:0.9rem;">⏳ 10 minutes • English • Space moves to next word</p>
+        </div>
+
+        <!-- Test Panel -->
+        <div id="testPanel" class="test-panel">
+            <div class="top-bar">
+                <div class="timer" id="timerDisplay">10:00</div>
+                <div></div>
+            </div>
+            <div class="columns">
+                <div class="source-col" id="sourceColumn">
+                    <div class="column-title">📜 Source Passage</div>
+                    <div id="sourceText" class="source-text"></div>
+                </div>
+                <div class="typed-col">
+                    <div class="column-title">✍ Your Typed Passage</div>
+                    <textarea id="typedArea" class="typed-area" placeholder="Start typing the passage here... Press space to move to next word." spellcheck="false"></textarea>
+                </div>
+            </div>
+            <button id="submitTestBtn" class="btn btn-submit">✅ Submit Test</button>
+        </div>
+
+        <!-- Result Panel -->
+        <div id="resultPanel" class="result-panel">
+            <h2 style="color:#1e2b4f;">📊 Test Result</h2>
+            <div class="stats-grid" id="statsGrid"></div>
+            <div>
+                <h3 style="margin-bottom:12px; color:#334155;">🔍 Your Typed Passage</h3>
+                <div id="highlightedPassage" class="highlight-passage"></div>
+            </div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <button id="retryBtn" class="btn">🔄 Practice Again</button>
+                <a id="speedPracticeResult" class="btn btn-speed" href="speed.html" target="_blank">⚡ Speed Practice</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ⚡ SET YOUR SPEED PRACTICE PAGE URL HERE
+            const SPEED_PRACTICE_URL = './speed.html'; // 👈 Replace with your actual link
+
+            // Apply URL to both buttons
+            document.getElementById('speedPracticeSetup').href = SPEED_PRACTICE_URL;
+            document.getElementById('speedPracticeResult').href = SPEED_PRACTICE_URL;
+
+            // ------------------ PASSAGES (400–450 words) ------------------
+            const passages = [
+                'The petitioner is an accused for offences punishable under Sections 302 and 201 of the IPC. He was convicted for the said offences and was taken into custody on 11.07.2009 and is in custody from the said date even today. A criminal appeal filed by the petitioner before this Court is also dismissed on. The claim of the petitioner in the subject petition is that the petitioner though not completed 14 years as is required in law for a premature release, is before this Court seeking consideration of his premature release on account of his exemplary conduct in the prison and acquisition of several educational qualifications while in prison. The qualification that the petitioner has acquired while in prison are as follows: The petitioner has acquired Post Graduate Certificate Training in Cyber Law from National Open University, a certificate to that effect is also issued to the petitioner. The petitioner has further acquired Post Graduation Diploma in Criminal justice again by the National Open University, a certificate to that effect is also appended to the petition. Apart from the qualifications that he has acquired while he is in prison, there are several certificates of appreciation by the Superintendent of Prison appended to the petition. These are all matters of record and are not in dispute. The imprisonment certificate of the petitioner would demonstrate that the petitioner has completed close to 13 years 2 months as on date in prison and according to the learned AGA, he has to wait for another 10 months for completion of 14 years for him to seek any premature release. Learned counsel appearing for the petitioner would seek to place reliance upon plethora of judgments rendered by the Apex Court, where the detenu has been released much before the completion of 14 years or much before completion of the term owing to the qualifications that they have possessed during their imprisonment and for the exemplary conduct that they have maintained while in prison as per the certificates issued by the respective superintendents of such prison. The detenu in this case is about 46 years of age now and we are informed that during the period of incarceration in jail, he has completed the following educational We find that the detenu in this case was convicted in another case under Section 120 of the Indian Penal Code, 1860 and sentenced to imprisonment for 5 years and was convicted under Section 4 of the Explosives Substances Act.',
+                'The administration of justice within the sovereign framework of India necessitates a robust and transparent judicial hierarchy, wherein the High Courts occupy a pivotal position of constitutional significance. The Bombay High Court, being one of the oldest and most prestigious institutions in the country, serves as a beacon of legal excellence and integrity. Its jurisdiction extends over the states of Maharashtra and Goa, as well as the Union Territories of Dadra and Nagar Haveli and Daman and Diu. To maintain the efficiency of such a vast judicial machinery, the role of the clerical staff is indispensable. A High Court Clerk is entrusted with the meticulous management of case files, the accurate recording of testimonies, and the systematic filing of affidavits. These responsibilities require not only a profound understanding of procedural law but also an exceptional degree of clerical precision and technical proficiency. In the contemporary legal landscape, the integration of digital technology has transformed the traditional methods of court management. The transition from physical documentation to electronic filing systems aims to reduce the pendency of cases and ensure the swift delivery of justice to the common citizen. However, this evolution demands that the staff possess superior typing speed and clerical accuracy. A single typographical error in a court order or a decree can lead to significant legal complications, potentially altering the outcome of a case or causing unnecessary delays in the execution of justice. Therefore, the recruitment process for clerks emphasizes rigorous testing of linguistic ability and technical skill. Candidates are expected to demonstrate their competence in handling complex legal terminology while maintaining a consistent speed over a sustained period. Furthermore, the principles of natural justice require that every legal proceeding be conducted with utmost transparency. The records maintained by the Registry serve as the official history of the litigation process. Whether it involves civil disputes regarding land partitions, criminal appeals, or writ petitions involving fundamental rights, the clerical record remains the primary source of reference for the Honerable Judges and the legal fraternity. As the judiciary continues to deal with an increasing influx of litigations, the demand for dedicated, skilled, and honest personnel remains at an all-time high. Aspiring candidates must recognize that their contribution, though often behind the scenes, is fundamental to the preservation of the rule of law and the maintenance of public trust in the judicial system of our nation.' ,
+                'The Maharashtra Rent Control Act of 1999 stands as a vital piece of legislation designed to unify and amend the laws relating to the control of rent and repairs of certain premises in the State of Maharashtra. This Act replaced the erstwhile Bombay Rents, Hotel and Lodging House Rates Control Act of 1947, bringing about a more balanced approach between the rights of landlords and the protections afforded to tenants. In the jurisdiction of the Bombay High Court, a significant volume of litigation arises from disputes concerning the possession of premises, the fixation of standard rent, and the recovery of arrears. For a Court Clerk, understanding the nuances of such statutes is essential, as the processing of suits filed under these provisions requires strict adherence to the timelines prescribed by the Code of Civil Procedure. Every civil suit initiated in the District Courts or the Small Causes Court eventually forms the basis of appellate or revisional proceedings before the High Court. The Registry must ensure that the "Paper Book," which contains all relevant pleadings, exhibits, and testimonies, is prepared with absolute fidelity to the original record. During the typing of a judgment or an interlocutory order, the clerk must be vigilant regarding the spelling of legal maxims and the correct citation of previous precedents. For instance, references to Article 226 or Article 227 of the Constitution of India must be typed with precision, as these provisions vest the High Court with the power of judicial review and superintendence over all subordinate courts and tribunals within its territorial limits. Moreover, the efficiency of the judiciary is often measured by the speed at which it disposes of long-pending matters. The "Case Information System" currently employed by the Indian judiciary relies heavily on the data entry performed by the clerical staff. Accurate data entry ensures that litigants can track their case status online, thereby promoting transparency and reducing the need for physical inquiries at the filing counter. A clerk must possess the mental fortitude to handle repetitive tasks while maintaining a high level of concentration. The ability to type at a steady pace of forty words per minute, while simultaneously ensuring that there are no grammatical or factual discrepancies, is the hallmark of a competent judicial employee. By mastering these technical skills, candidates contribute directly to the dignity of the court and the seamless administration of the legal process in our democratic society.' ,
+                'The exercise of Writ Jurisdiction by the High Court under Article 226 of the Constitution of India represents one of the most potent safeguards against the arbitrary exercise of power by the State or its instrumentalities. This extraordinary jurisdiction allows the Court to issue various directions, orders, or writs, including Habeas Corpus, Mandamus, Prohibition, Quo Warranto, and Certiorari, for the enforcement of fundamental rights and for any other purpose. In the day-to-day operations of the Bombay High Court, a substantial number of petitions are filed challenging the decisions of quasi-judicial bodies, local municipal authorities, and government departments. The clerical department plays a critical role in the initial scrutiny of these petitions. A clerk must verify whether the court fees have been properly paid under the Maharashtra Court Fees Act and ensure that all annexures are clearly legible and duly certified as true copies. Accuracy in the preparation of the "Daily Cause List" is another vital responsibility that demands high-speed typing and attention to detail. This list serves as the official schedule for the courts proceedings, and any error in the case number, the names of the advocates, or the specific bench assigned can cause significant logistical hurdles in the courtroom. Furthermore, when the Honble Judges dictate orders in open court, the ability of the staff to transcribe and type these directions swiftly is paramount. Legal language often involves archaic terms and Latin phrases such as "inter alia," "mutatis mutandis," and "ad interim," which must be reproduced without error. The transition toward a "Paperless Court" model further necessitates that clerks are proficient in handling digital signatures and uploading scanned documents into the centralized server system. Beyond technical skill, the position of a Court Clerk demands a high standard of ethical conduct and confidentiality. During the pendency of sensitive litigations, particularly those involving matrimonial disputes or intellectual property rights, the clerical staff must ensure that no unauthorized person gains access to the case records. The judicial process relies on the silent but significant contribution of these officers who manage the documentation that forms the backbone of every judgment. As candidates prepare for the typing test, they should focus on maintaining a rhythmic typing speed while keeping their posture ergonomic to avoid fatigue. Success in the recruitment process requires a combination of linguistic fluency, technical dexterity, and a commitment to serving the cause of justice with integrity and diligence in one of Indias most venerable legal institutions.' ,
+                'The law of evidence is an essential branch of adjectival law that determines the path through which facts are proved within a court of law. Under the Indian Evidence Act, the distinction between "proved," "disproved," and "not proved" forms the bedrock of judicial reasoning. In criminal trials, the burden of proof traditionally rests upon the prosecution, which must establish the guilt of the accused beyond a reasonable doubt. For the clerical staff at the Bombay High Court, the processing of criminal appeals requires an intimate familiarity with the trial court records, including the "Roznama," the deposition of witnesses, and the various exhibits marked during the proceedings. Accuracy in transcribing these records is non-negotiable, as the appellate bench relies heavily on the written word to determine if the lower courts judgment warrants interference. A significant portion of the High Courts workload involves the scrutiny of "First Information Reports" and the subsequent "Charge Sheets" filed under Section 173 of the Code of Criminal Procedure. When a clerk is tasked with entering data related to these documents, they must ensure that the names of the parties, the sections of the Indian Penal Code, and the dates of the alleged offenses are recorded without a single discrepancy. For instance, a mistake in typing Section 302 instead of Section 307 can lead to a fundamental misunderstanding of the nature of the crime. Furthermore, the modern clerk must be adept at handling electronic evidence, such as call detail records or CCTV footage, which are now increasingly governed by the provisions of Section 65B of the Evidence Act. In addition to technical proficiency, a clerk must maintain the highest standards of decorum and discipline within the court premises. The Registry is often the first point of contact for advocates and litigants alike; therefore, clarity in communication and efficiency in the handling of inquiries are indispensable traits. The ability to maintain a typing speed of over forty words per minute is not merely a requirement for the entrance examination but a daily necessity in a high-pressure environment where urgent matters are moved for "Circulation" before the Honble Bench. As the judiciary moves toward a more streamlined and transparent era, the clerical staff remains the vital link between the legal practitioners and the final delivery of a judgment. Mastery of these skills ensures that the wheels of justice turn smoothly, upholding the constitutional mandate of providing a fair and speedy trial to every citizen.'
+
+            ];
+
+            function enforceWordCount(passage, minWords = 400, maxWords = 450) {
+                let words = passage.trim().split(/\s+/);
+                if (words.length >= minWords && words.length <= maxWords) return words.join(' ');
+                while (words.length < minWords) {
+                    words.push("justice", "court", "legal", "procedure", "document", "order", "judgment");
+                }
+                if (words.length > maxWords) {
+                    words = words.slice(0, maxWords);
+                }
+                return words.join(' ');
+            }
+
+            const correctedPassages = passages.map(p => enforceWordCount(p, 400, 450));
+
+            // DOM elements
+            const setupPanel = document.getElementById('setupPanel');
+            const testPanel = document.getElementById('testPanel');
+            const resultPanel = document.getElementById('resultPanel');
+
+            const passageSelect = document.getElementById('passageSelect');
+            const showSourceCheck = document.getElementById('showSourceCheck');
+            const disableBackspaceCheck = document.getElementById('disableBackspaceCheck');
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            const startBtn = document.getElementById('startBtn');
+
+            const timerDisplay = document.getElementById('timerDisplay');
+            const sourceTextDiv = document.getElementById('sourceText');
+            const sourceColumn = document.getElementById('sourceColumn');
+            const typedArea = document.getElementById('typedArea');
+            const submitTestBtn = document.getElementById('submitTestBtn');
+
+            const statsGrid = document.getElementById('statsGrid');
+            const highlightedPassage = document.getElementById('highlightedPassage');
+            const retryBtn = document.getElementById('retryBtn');
+
+            let currentPassageText = '';
+            let sourceWords = [];
+            let selectedPassageIndex = 0;
+            let timerInterval = null;
+            let timeLeft = 600;
+            let startTime = null;
+            let showSource = true;
+            let disableBackspace = false;
+            let testActive = false;
+
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            function clearTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            function getSelectedPassage() {
+                const val = passageSelect.value;
+                if (val === 'random') {
+                    return Math.floor(Math.random() * correctedPassages.length);
+                }
+                return parseInt(val, 10);
+            }
+
+            function updateSelectedIndex() {
+                selectedPassageIndex = getSelectedPassage();
+            }
+
+            function resetView() {
+                clearTimer();
+                setupPanel.classList.remove('hidden');
+                testPanel.style.display = 'none';
+                resultPanel.style.display = 'none';
+                testActive = false;
+                timeLeft = 600;
+                timerDisplay.textContent = formatTime(timeLeft);
+                typedArea.value = '';
+                sourceTextDiv.textContent = '';
+                showSource = showSourceCheck.checked;
+                disableBackspace = disableBackspaceCheck.checked;
+                sourceColumn.style.display = '';
+                sourceTextDiv.classList.remove('hidden');
+                updateSelectedIndex();
+            }
+
+            function downloadPDF() {
+             const passage = correctedPassages[selectedPassageIndex];
+                if (!passage) {
+                  alert('Please select a passage first.');
+                     return;
+                         }
+             const { jsPDF } = window.jspdf;
+             const doc = new jsPDF();
+             doc.setFont('Courier', 'Normal');
+             doc.setFontSize(20);
+
+                // split the text into lines that fit the page width (170mm)
+             const lines = doc.splitTextToSize(passage, 170);
+    
+             let cursorY = 25;               // start position (mm)
+             const lineHeight = 10;          // spacing between lines
+             const pageHeight = doc.internal.pageSize.height;
+             const bottomMargin = 20;
+
+                for (let i = 0; i < lines.length; i++) {
+                 // if the next line would go beyond the page, add a new page
+                 if (cursorY + lineHeight > pageHeight - bottomMargin) {
+                 doc.addPage();
+                     cursorY = 25;           // reset cursor on new page
+                  }
+                  doc.text(lines[i], 14, cursorY);
+                 cursorY += lineHeight;
+                    }
+
+                 doc.save(`passage_${selectedPassageIndex + 1}.pdf`);
+                    }
+            function startTest() {
+                updateSelectedIndex();
+                currentPassageText = correctedPassages[selectedPassageIndex];
+                sourceWords = currentPassageText.trim().split(/\s+/);
+
+                showSource = showSourceCheck.checked;
+                disableBackspace = disableBackspaceCheck.checked;
+
+                sourceTextDiv.textContent = currentPassageText;
+                if (showSource) {
+                    sourceColumn.style.display = '';
+                    sourceTextDiv.classList.remove('hidden');
+                } else {
+                    sourceColumn.style.display = 'none';
+                    sourceTextDiv.classList.add('hidden');
+                }
+
+                typedArea.value = '';
+                typedArea.disabled = false;
+                typedArea.focus();
+
+                timeLeft = 600;
+                timerDisplay.textContent = formatTime(timeLeft);
+                startTime = Date.now();
+
+                clearTimer();
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = formatTime(timeLeft);
+                    if (timeLeft <= 0) {
+                        clearTimer();
+                        submitTest();
+                    }
+                }, 1000);
+
+                setupPanel.classList.add('hidden');
+                testPanel.style.display = 'flex';
+                resultPanel.style.display = 'none';
+                testActive = true;
+            }
+
+            typedArea.addEventListener('keydown', function(e) {
+                if (!testActive) return;
+                if (disableBackspace && e.key === 'Backspace') {
+                    e.preventDefault();
+                }
+            });
+
+            function submitTest() {
+                if (!testActive) return;
+                clearTimer();
+                testActive = false;
+                typedArea.disabled = true;
+
+                const typedRaw = typedArea.value;
+                const userWords = typedRaw.trim().split(/\s+/).filter(w => w.length > 0);
+                const totalSourceWords = sourceWords.length;
+                const typedCount = userWords.length;
+
+                let correctCount = 0;
+                for (let i = 0; i < Math.min(typedCount, totalSourceWords); i++) {
+                    if (userWords[i].toLowerCase() === sourceWords[i].toLowerCase()) {
+                        correctCount++;
+                    }
+                }
+                const wrongWords = typedCount - correctCount;
+                const remainingWords = Math.max(0, totalSourceWords - typedCount);
+
+                const elapsedMs = Date.now() - startTime;
+                const elapsedMinutes = elapsedMs / 60000;
+                const wpm = elapsedMinutes > 0 ? Math.round(correctCount / elapsedMinutes) : 0;
+
+                const accuracy = typedCount === 0 ? 0 : ((correctCount / typedCount) * 100).toFixed(2);
+
+                const penalty = (wrongWords + remainingWords) * 0.25;
+                const marks = (20 - penalty).toFixed(2);
+                const passFail = parseFloat(marks) >= 10 ? '✅ Pass' : '❌ Fail';
+
+                const statsData = [
+                    { label: 'Total Words', value: totalSourceWords },
+                    { label: 'Typed Words', value: typedCount },
+                    { label: 'Wrong Words', value: wrongWords },
+                    { label: 'Remaining', value: remainingWords },
+                    { label: 'Speed (WPM)', value: wpm },
+                    { label: 'Accuracy %', value: `${accuracy}%` },
+                    { label: 'Marks', value: `${marks} / 20` },
+                    { label: 'Result', value: passFail }
+                ];
+
+                statsGrid.innerHTML = statsData.map(s => `
+                    <div class="stat-card">
+                        <div class="stat-value">${s.value}</div>
+                        <div class="stat-label">${s.label}</div>
+                    </div>
+                `).join('');
+
+                let highlightedHtml = '';
+                for (let i = 0; i < userWords.length; i++) {
+                    const word = userWords[i];
+                    const isCorrect = i < totalSourceWords && word.toLowerCase() === sourceWords[i].toLowerCase();
+                    const cssClass = isCorrect ? 'word-correct' : 'word-wrong';
+                    highlightedHtml += `<span class="${cssClass}">${escapeHTML(word)}</span> `;
+                }
+                highlightedPassage.innerHTML = highlightedHtml.trim();
+
+                testPanel.style.display = 'none';
+                resultPanel.style.display = 'flex';
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // Event listeners
+            passageSelect.addEventListener('change', updateSelectedIndex);
+            startBtn.addEventListener('click', startTest);
+            submitTestBtn.addEventListener('click', submitTest);
+            retryBtn.addEventListener('click', resetView);
+            downloadPdfBtn.addEventListener('click', downloadPDF);
+
+            // Initialize
+            updateSelectedIndex();
+            resetView();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Practice – Random Words</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .container {
+      background: white;
+      width: 100%;
+      max-width: 800px;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #1e293b;
+      margin-bottom: 1.5rem;
+    }
+    .time-selector {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .time-selector label {
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .timer-box {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 1rem 0;
+      color: #1e293b;
+    }
+    .timer-box span {
+      background: #e2e8f0;
+      padding: 0.3rem 1.2rem;
+      border-radius: 12px;
+    }
+    .passage-container {
+      background: #f8fafc;
+      padding: 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 1.2rem;
+      line-height: 1.8;
+      word-wrap: break-word;
+      user-select: none;
+      text-align: justify;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 0.8rem;
+      font-size: 1.2rem;
+      border: 2px solid #94a3b8;
+      border-radius: 10px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+      font-family: 'Courier New', monospace;
+    }
+    textarea:focus { border-color: #3b82f6; }
+    textarea:disabled { background: #f1f5f9; }
+
+    .live-stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 1rem 0;
+    }
+    .stat-box {
+      background: #eef2ff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-box .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    .stat-box .label { font-size: 0.9rem; color: #475569; }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    button {
+      padding: 0.6rem 2.5rem;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      transition: 0.2s;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:hover:not(:disabled) { background: #2563eb; }
+
+    .result-box {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #dcfce7;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1.3rem;
+      display: none;
+    }
+    .result-box.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>⚡ Random Words Typing Practice</h1>
+  <!-- Add right after <h1> -->
+<div style="text-align: center; margin-bottom: 1rem;">
+  <a href="index.html" style="display: inline-block; padding: 0.5rem 1.5rem; background: #0f766e; color: white; border-radius: 10px; text-decoration: none; font-weight: bold;">
+    📝 Bombay High Court Test
+  </a>
+</div>
+
+  <div class="time-selector" id="timeSelector">
+    <label><input type="radio" name="testTime" value="60" /> 60 sec</label>
+    <label><input type="radio" name="testTime" value="180" checked /> 3 min</label>
+    <label><input type="radio" name="testTime" value="300" /> 5 min</label>
+  </div>
+
+  <div class="timer-box">
+    ⏱️ <span id="timerDisplay">00:00</span>
+  </div>
+
+  <div class="passage-container" id="passageDisplay">
+    Press "Start Test" to see the random words.
+  </div>
+
+  <textarea id="typingArea" placeholder="Start typing here..." disabled></textarea>
+
+  <div class="live-stats" id="liveStats">
+    <div class="stat-box">
+      <div class="value" id="liveWpm">0</div>
+      <div class="label">Net WPM</div>
+    </div>
+    <div class="stat-box">
+      <div class="value" id="liveAcc">100%</div>
+      <div class="label">Accuracy</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="startBtn">Start Test</button>
+  </div>
+
+  <div class="result-box" id="resultBox">
+    <div>✅ Test Complete!</div>
+    <div>🔹 Speed: <strong id="finalWpm">0</strong> WPM</div>
+    <div>🔹 Accuracy: <strong id="finalAcc">100%</strong></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ---------- Common English Word List (300+ words) ----------
+    const wordBank = [
+      "the", "be", "to", "of", "and", "a", "in", "that", "have", "it",
+      "for", "not", "on", "with", "he", "as", "you", "do", "at", "this",
+      "but", "his", "by", "from", "they", "we", "say", "her", "she", "or",
+      "an", "will", "my", "one", "all", "would", "there", "their", "what",
+      "so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
+      "when", "make", "can", "like", "time", "no", "just", "him", "know",
+      "take", "people", "into", "year", "your", "good", "some", "could",
+      "them", "see", "other", "than", "then", "now", "look", "only", "come",
+      "its", "over", "think", "also", "back", "after", "use", "two", "how",
+      "our", "work", "first", "well", "way", "even", "new", "want", "because",
+      "any", "these", "give", "day", "most", "us", "great", "world", "life",
+      "hand", "part", "child", "eye", "woman", "place", "case", "week",
+      "company", "system", "program", "question", "government", "number",
+      "night", "point", "home", "water", "room", "mother", "area", "money",
+      "story", "fact", "month", "lot", "right", "study", "book", "eye",
+      "job", "word", "business", "issue", "side", "kind", "head", "house",
+      "service", "friend", "father", "power", "hour", "game", "line", "end",
+      "member", "law", "car", "city", "community", "name", "president",
+      "team", "minute", "idea", "kid", "body", "information", "back",
+      "parent", "face", "others", "level", "office", "door", "health",
+      "person", "art", "war", "history", "party", "result", "change",
+      "morning", "reason", "research", "girl", "guy", "moment", "air",
+      "teacher", "force", "education", "boy", "hair", "nature", "peace",
+      "land", "food", "fire", "future", "action", "love", "human", "type",
+      "security", "experience", "film", "activity", "south", "west", "north",
+      "east", "death", "population", "street", "building", "class", "town",
+      "hospital", "center", "field", "trade", "music", "player", "product",
+      "politics", "culture", "rule", "report", "role", "increase", "data",
+      "situation", "effort", "series", "that", "picture", "process",
+      "condition", "quality", "development", "range", "price", "response",
+      "relationship", "value", "support", "term", "court", "practice",
+      "period", "policy", "nation", "bank", "science", "doctor", "figure",
+      "machine", "technology", "matter", "care", "oil", "garden", "model",
+      "material", "window", "note", "every", "body", "understand", "turn",
+      "plan", "behavior", "sense", "treatment", "approach", "disease",
+      "performance", "success", "operation", "special", "theory", "energy",
+      "campaign", "population", "issue", "paper", "image", "risk", "store",
+      "rest", "village", "mission", "site", "sort", "star", "style",
+      "resource", "speech", "presence", "element", "army", "tax", "cabinet",
+      "goal", "animal", "discussion", "degree", "patient", "knowledge",
+      "society", "investment", "tradition", "rule", "base", "medium",
+      "advice", "safety", "success", "future", "section", "season", "tool",
+      "brother", "income", "present", "planning", "growth", "amount",
+      "church", "choice", "help", "opportunity", "rate", "so", "article",
+      "conference", "south", "top", "race", "analysis", "focus", "staff",
+      "character", "pressure", "property", "report", "feature", "method",
+      "whatever", "marriage", "project", "task", "television", "capital",
+      "word", "film", "decision", "camp", "design", "lawyer", "agreement",
+      "beyond", "study", "third", "role", "kitchen", "selection", "thought",
+      "behaviour", "step", "writer", "cup", "owner", "movement", "member",
+      "song", "help", "menu", "suggestion", "actor", "environment", "fact",
+      "character", "professor", "shirt", "executive", "bag", "airport",
+      "method", "responsibility", "profession", "addition", "intention",
+      "hall", "queen", "description", "meaning", "scene", "solution",
+      "revolution", "shape", "colleague", "voice", "influence", "sector",
+      "concept", "dinner", "audience", "attorney", "currency", "grocery",
+      "recommendation", "depression", "awareness", "inspiration", "psychology",
+      "comparison", "elevator", "session", "manufacturer", "department",
+      "application", "significance", "establishment", "perspective",
+      "grandmother", "supermarket", "congress", "contribution", "arrangement",
+      "introduction", "conversation", "understanding", "investment", "hi",
+      "bye", "yes", "no", "please", "thanks", "hello", "goodbye", "sorry"
+    ];
+
+    // DOM elements
+    const passageDisplay = document.getElementById('passageDisplay');
+    const typingArea = document.getElementById('typingArea');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const startBtn = document.getElementById('startBtn');
+    const liveWpm = document.getElementById('liveWpm');
+    const liveAcc = document.getElementById('liveAcc');
+    const resultBox = document.getElementById('resultBox');
+    const finalWpm = document.getElementById('finalWpm');
+    const finalAcc = document.getElementById('finalAcc');
+    const timeRadios = document.getElementsByName('testTime');
+
+    let targetText = '';            // full string of random words
+    let testActive = false;
+    let testFinished = false;
+    let timeLeft = 0;
+    let timerInterval = null;
+    let startTime = null;
+
+    // ---------- Helper: get selected time in seconds ----------
+    function getSelectedTime() {
+      for (const radio of timeRadios) {
+        if (radio.checked) return parseInt(radio.value, 10);
+      }
+      return 180; // default 3 min
+    }
+
+    // ---------- Generate random 180-word passage ----------
+    function generatePassage() {
+      const words = [];
+      for (let i = 0; i < 180; i++) {
+        const randomIdx = Math.floor(Math.random() * wordBank.length);
+        words.push(wordBank[randomIdx]);
+      }
+      targetText = words.join(' ');
+      passageDisplay.textContent = targetText;
+    }
+
+    // ---------- Format time as MM:SS ----------
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    // ---------- Stop timer and end test ----------
+    function endTest() {
+      clearInterval(timerInterval);
+      testActive = false;
+      testFinished = true;
+      typingArea.disabled = true;
+      startBtn.disabled = false;
+
+      const typedText = typingArea.value;
+      const elapsedMin = (Date.now() - startTime) / 60000 || 0.01;
+      let correctChars = 0;
+      const len = Math.min(typedText.length, targetText.length);
+      for (let i = 0; i < len; i++) {
+        if (typedText[i] === targetText[i]) correctChars++;
+      }
+      const totalTyped = typedText.length;
+      const netWPM = Math.round((correctChars / 5) / elapsedMin);
+      const accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+
+      // Show final result
+      finalWpm.textContent = netWPM;
+      finalAcc.textContent = accuracy + '%';
+      resultBox.classList.add('show');
+
+      // Update live stats to final values
+      liveWpm.textContent = netWPM;
+      liveAcc.textContent = accuracy + '%';
+    }
+
+    // ---------- Update live stats on typing ----------
+    function updateLiveStats() {
+      if (!testActive) return;
+      const typedText = typingArea.value;
+      const elapsedMin = (Date.now() - startTime) / 60000 || 0.001;
+      let correctChars = 0;
+      const len = Math.min(typedText.length, targetText.length);
+      for (let i = 0; i < len; i++) {
+        if (typedText[i] === targetText[i]) correctChars++;
+      }
+      const totalTyped = typedText.length;
+      const netWPM = Math.round((correctChars / 5) / elapsedMin);
+      const accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+
+      liveWpm.textContent = netWPM;
+      liveAcc.textContent = accuracy + '%';
+    }
+
+    // ---------- Start the test ----------
+    function startTest() {
+      // Generate new passage
+      generatePassage();
+      // Reset UI
+      resultBox.classList.remove('show');
+      typingArea.value = '';
+      typingArea.disabled = false;
+      typingArea.focus();
+      testActive = true;
+      testFinished = false;
+      startBtn.disabled = true;
+      // Lock time selection
+      for (const radio of timeRadios) radio.disabled = true;
+
+      timeLeft = getSelectedTime();
+      timerDisplay.textContent = formatTime(timeLeft);
+      startTime = Date.now();
+
+      // Clear previous interval
+      clearInterval(timerInterval);
+      // Start countdown
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = formatTime(timeLeft);
+        updateLiveStats();
+        if (timeLeft <= 0) {
+          endTest();
+        }
+      }, 1000);
+
+      // Live stats update instantly on typing
+      typingArea.addEventListener('input', updateLiveStats);
+    }
+
+    // ---------- Event listeners ----------
+    startBtn.addEventListener('click', startTest);
+
+    // Prevent paste (optional, but keeps practice honest)
+    typingArea.addEventListener('paste', e => e.preventDefault());
+
+    // On page load, set timer display to selected time
+    timerDisplay.textContent = formatTime(getSelectedTime());
+    // Update when user changes radio
+    for (const radio of timeRadios) {
+      radio.addEventListener('change', () => {
+        if (!testActive) {
+          timerDisplay.textContent = formatTime(getSelectedTime());
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>
